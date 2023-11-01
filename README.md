@@ -11,7 +11,7 @@ A simple app in html/javascript which allows testing of practice test questions.
 
 ## Features
 
-List the key features of your project. For example:
+A simple app which allows you to visualise practice questions, rather than just staring at a word document.
 
 - Really simple, runs anywhere.
 - Takes questions in a json format (questions.json)
