@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Practice Question Tester</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- Some simple styles -->
+    <style>
+        
+        body {
+            background-color: #f5f5f5;
+        }
+
+        .quiz-container {
+            max-width: 500px;
+            background-color: #fff;
+            border: 1px solid #d1d1d1;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px auto;
+        }
+
+        .question-text {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+
+        .options label {
+            display: block;
+            font-size: 18px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            margin-top: 20px;
+            font-size: 18px;
+        }
+
+        .result {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .correct-answer {
+            font-size: 16px;
+            font-weight: bold;
+            color: green;
+        }
+
+        .explanation {
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        .btn-success {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="quiz-container">
+            <h1 class="question-text" id="question-text">Question Goes Here</h1>
+            <div class="form-group options" id="options"></div>
+            <button class="btn btn-primary" id="check-answer">Check Answer</button>
+            <div class="result" id="result"></div>
+            <div class="correct-answer d-none" id="correct-answer"></div> 
+            <div class="explanation" id="explanation"></div>
+            <button class="btn btn-primary d-none" id="next-question">Next Question</button>
+        </div>
+    </div>
+
+    <script>
+        let questions = [];
+        let currentQuestion = 0;
+
+        const quizContainer = document.querySelector(".quiz-container");
+        const questionText = document.getElementById("question-text");
+        const optionsDiv = document.getElementById("options");
+        const checkAnswerButton = document.getElementById("check-answer");
+        const resultDiv = document.getElementById("result");
+        const explanationDiv = document.getElementById("explanation");
+        const nextQuestionButton = document.getElementById("next-question");
+        const correctAnswerDiv = document.getElementById("correct-answer");
+
+        // Function to load questions from an external JSON file
+        function loadQuestions() {
+            // Load questions from "questions.json"
+            fetch("http://127.0.0.1:8080/questions.json")
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    questions = data.questions;
+                    displayQuestion();
+                })
+                .catch((error) => console.error("Error loading questions:", error));
+        }
+
+        // Function to display the current question
+        function displayQuestion() {
+            const questionData = questions[currentQuestion];
+            questionText.textContent = questionData.question;
+            optionsDiv.innerHTML = "";
+            const options = questionData.options;
+
+            for (let i = 0; i < options.length; i++) {
+                const option = document.createElement("div");
+                option.classList.add("form-check");
+
+                const input = document.createElement("input");
+                input.type = "radio";
+                input.name = "options";
+                input.id = `option-${i}`;
+                input.value = i;
+                input.classList.add("form-check-input");
+
+                const label = document.createElement("label");
+                label.classList.add("form-check-label");
+                label.setAttribute("for", `option-${i}`);
+                label.textContent = options[i];
+
+                option.appendChild(input);
+                option.appendChild(label);
+                optionsDiv.appendChild(option);
+            }
+
+            checkAnswerButton.classList.remove("d-none");
+            resultDiv.textContent = "";
+            resultDiv.classList.remove("text-success", "text-danger"); // Clear the text color style
+            explanationDiv.textContent = "";
+            nextQuestionButton.classList.add("d-none");
+            correctAnswerDiv.classList.add("d-none");
+        }
+
+        // Function to check the user's answer
+        checkAnswerButton.addEventListener("click", () => {
+            const selectedOption = document.querySelector('input[name="options"]:checked');
+
+            if (selectedOption) {
+                const selectedValue = parseInt(selectedOption.value);
+                const questionData = questions[currentQuestion];
+
+                if (selectedValue + 1 === questionData.solution) { // Adjust for one-based numbering
+                    resultDiv.textContent = "Correct!";
+                    resultDiv.classList.add("text-success");
+                    correctAnswerDiv.classList.add("d-none");
+                } else {
+                    resultDiv.textContent = "Incorrect!";
+                    resultDiv.classList.add("text-danger");
+                    correctAnswerDiv.textContent = `Correct answer: ${questionData.options[questionData.solution - 1]}`;
+                    correctAnswerDiv.classList.remove("d-none");
+                }
+
+                explanationDiv.textContent = questionData.explanation;
+                checkAnswerButton.classList.add("d-none");
+                nextQuestionButton.classList.remove("d-none");
+            }
+        });
+
+        // Function to move to the next question
+        nextQuestionButton.addEventListener("click", () => {
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                displayQuestion();
+            } else {
+                quizContainer.innerHTML = "<h1 class='text-success text-center'>Quiz Complete!</h1>";
+                const resetButton = document.createElement("button");
+                resetButton.textContent = "Start Over";
+                resetButton.classList.add("btn", "btn-success");
+                resetButton.addEventListener("click", resetQuiz);
+                quizContainer.appendChild(resetButton);
+            }
+        });
+
+        // Function to reset the quiz
+        function resetQuiz() {
+            currentQuestion = 0;
+            displayQuestion();
+            resultDiv.textContent = "";
+            resultDiv.classList.remove("text-success", "text-danger"); // Clear the text color style
+            explanationDiv.textContent = "";
+            nextQuestionButton.classList.add("d-none");
+            correctAnswerDiv.classList.add("d-none");
+        }
+
+        // Load questions when the page loads
+        loadQuestions();
+    </script>
+</body>
+</html>
