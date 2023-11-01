@@ -32,6 +32,7 @@ $ python3 -m http.server 8080
 ## Usage
 
 Modify the app to your own requirements, or use the simple JSON format from questions.json.
+
 As configured, each question requires a question, answer options, solution (number) and an explanation, if you want to show one.
 
 Drop your correctly formatted json into questions.json and navigate to your web server. 
