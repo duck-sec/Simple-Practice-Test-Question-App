@@ -1,4 +1,4 @@
-# Project Name
+# Simple Practice Test Question App
 
 A simple app in html/javascript which allows testing of practice test questions.
 
