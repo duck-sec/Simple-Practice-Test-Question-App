@@ -36,3 +36,5 @@ Modify the app to your own requirements, or use the simple JSON format from ques
 As configured, each question requires a question, answer options, solution (number) and an explanation, if you want to show one.
 
 Drop your correctly formatted json into questions.json and navigate to your web server. 
+
+![Screenshot](screenshot.jpg)
